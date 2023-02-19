@@ -1,22 +1,24 @@
-from selenium import webdriver
+import requests
+from datetime import datetime
+import time
 
-def get_drvier():
-  # Set options to make browsing easier
-  options = webdriver.ChromeOptions()
-  options.add_argument("disable-infobars")
-  options.add_argument("start-maximized")
-  options.add_argument("disable-dev-shm-usage")
-  options.add_argument("no-sandbox")
-  options.add_experimental_option("excludeSwitches", ["enable-automation"])
-  options.add_argument("disable-blink-features=AutomationControlled")
+ticker = input("Enter the ticker symbol: ")
+from_date = input('Enter start date in yyyy/mm/dd format:')
+to_date = input('Enter end date in yyyy/mm/dd format:')
 
-  driver = webdriver.Chrome(options=options)
-  driver.get("https://www.aptiv.com/en/insights/autonomous-driving")
-  return driver
+from_datetime = datetime.strptime(from_date, '%Y/%m/%d')
+to_datetime = datetime.strptime(to_date, '%Y/%m/%d')
 
-def main():
-  driver = get_drvier()
-  element = driver.find_element(by="xpath", value="/html/body/div[1]/div[2]/div[2]/div[2]/div/div/div/div[1]")
-  return element.text
+from_epoch = int(time.mktime(from_datetime.timetuple()))
+to_epoch = int(time.mktime(to_datetime.timetuple()))
 
-print(main())
+
+url = f"https://query1.finance.yahoo.com/v7/finance/download/{ticker}?period1={from_epoch}&period2={to_epoch}&interval=1d&events=history&includeAdjustedClose=true"
+
+headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36"} 
+
+content = requests.get(url, headers=headers).content
+print(content)
+
+with open('data.csv', 'wb') as file:
+  file.write(content)
